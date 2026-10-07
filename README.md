@@ -23,22 +23,8 @@ Main skills covered
 - Packet verification with Wireshark
 
 - Basic SOC interpretation of firewall behavior
+(Image 1)
 
-\
-\
-\
-(Image 1)\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
 For the hands-on environment, I can use my MacBook Pro + Docker to create isolated virtual networks and containers representing:
 
 | Component       | Role                                    |
@@ -61,20 +47,13 @@ Internal LAN → DMZ ALLOW when needed
 
 That is the basic architecture used to reduce the risk that compromising a public server immediately exposes the internal network.
 
-Step 1 — Verify Docker\
-\
+### Step 1 — Verify Docker
+
 I open Terminal and I run: docker –version\
 Then I run: docker ps\
-The first command confirms Docker is installed. The second confirms that the Docker engine is running. (Image 2)\
-\
-\
-\
-\
-\
-\
-\
-\
-Step 2 — Create the External Network for the Firewall-Protected DMZ lab.
+The first command confirms Docker is installed. The second confirms that the Docker engine is running. (Image 2)
+
+### Step 2 — Create the External Network for the Firewall-Protected DMZ lab.
 
 I pen Docker Desktop on my Mac:
 
@@ -84,25 +63,19 @@ Now I will create the first network representing the external/Internet side of
 
 In the terminal, I run:
 
-docker network create \\
+docker network create 
 
---driver bridge \\
+--driver bridge 
 
---subnet 172.20.0.0/24 \\
+--subnet 172.20.0.0/24 
 
 dmz_external
 
-### Then verify it with command: docker network inspect dmz_external (Images 3 and 4)\
-\
-\
-\
-\
-\
-\
-\
-Step 3 — Create the DMZ Network
+Then verify it with command: docker network inspect dmz_external (Images 3 and 4)
 
-### Now I create a Step 3 — Create the DMZ Network
+### Step 3 — Create the DMZ Network
+
+Now I create a Step 3 — Create the DMZ Network
 
 Now we'll create a separate subnet for the DMZ:
 
@@ -115,23 +88,16 @@ docker network create \\
 dmz_zone
 
 Then verify it with: docker network inspect dmz_zone
+(Image 5)
 
-\
-\
-\
-\
-(Image 5)\
-\
-\
 I successfully created:
 
 DMZ network: dmz_zone\
 Subnet: 172.21.0.0/24\
 Gateway: 172.21.0.1\
 Driver: bridge\
-\
 (Image 6)\
-\
+
 
 ## Step 4 — Create the Internal LAN
 
