@@ -1,4 +1,4 @@
-Network Lab — Firewall-Protected DMZ
+### Network Lab — Firewall-Protected DMZ
 
 Introduction
 
