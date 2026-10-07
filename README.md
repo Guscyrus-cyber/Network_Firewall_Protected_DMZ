@@ -63,13 +63,13 @@ Now I will create the first network representing the external/Internet side of
 
 In the terminal, I run:
 
-docker network create 
+docker network create \
 
---driver bridge 
+--driver bridge \
 
---subnet 172.20.0.0/24 
+--subnet 172.20.0.0/24 \
 
-dmz_external
+dmz_external 
 
 Then verify it with command: docker network inspect dmz_external (Images 3 and 4)
 
@@ -83,7 +83,7 @@ docker network create \\
 
 --driver bridge \\
 
---subnet 172.21.0.0/24 \\
+--subnet 172.21.0.0/24 \
 
 dmz_zone
 
@@ -99,13 +99,13 @@ Driver: bridge\
 (Image 6)\
 
 
-## Step 4 — Create the Internal LAN
+### Step 4 — Create the Internal LAN
 
 Now I create the third isolated network:
 
 docker network create \\
 
---driver bridge \\
+--driver bridge \\ 
 
 --subnet 172.22.0.0/24 \\
 
@@ -114,18 +114,11 @@ dmz_internal
 Then I verify: docker network inspect dmz_internal
 
 After this, I will have all three security zones ready: External → DMZ → Internal.
-
-\
-\
-\
 (Image 7)
 
 The new Internal LAN is correctly configured as dmz_internal, subnet 172.22.0.0/24, gateway 172.22.0.1. (Image 8)\
-\
-\
-\
-Step 5 — Create the External Client
-------------------------------------------------------------------------------------------------------------------
+
+### Step 5 — Create the External Client
 
 Now I'll create a container representing a computer outside the protected organization.
 
@@ -139,14 +132,12 @@ docker run -dit \\
 
 alpine sh
 
-Then I verify with: docker ps --filter name=external-client\
-\
-The outputs confirm the container external-client is running on the dmz_external network. (Image 9)\
-\
-\
-\
-Step 6 — Create the DMZ Web Server
-----------------------------------------------------------------------------------------------------
+Then I verify with: docker ps --filter name=external-client.
+
+The outputs confirm the container external-client is running on the dmz_external network. (Image 9)
+
+### Step 6 — Create the DMZ Web Server
+
 
 Now I’ll deploy a simple web server inside the DMZ.
 
@@ -164,23 +155,9 @@ Then I verify with: docker ps --filter name=dmz-web
 
 At this point, the topology will be: (Image 10)
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-The dmz-web container is Up with TCP port 80 available. This is now the simulated public-facing web server inside the DMZ. (Image 11)\
-\
-\
-\
-Step 7 — Create the Internal Host
---------------------------------------------------------------------------------------------------------------------------------------
+The dmz-web container is Up with TCP port 80 available. This is now the simulated public-facing web server inside the DMZ. (Image 11)
+
+### Step 7 — Create the Internal Host
 
 Now I'll create a host representing a protected computer on the organization's internal LAN.
 
@@ -199,27 +176,7 @@ Then I verify with: docker ps --filter name=internal-host
 The output confirms internal-host is running successfully on the internal network.\
 I now have the three endpoints ready: (Imagea 12 and 13)
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-Step 8 — Create the Firewall Container
---------------------------------------
+### Step 8 — Create the Firewall Container
 
 Now I am reaching the main security component of the lab.
 
@@ -243,25 +200,13 @@ Notice: I’m creating a Linux Alpine container inside Docker on my MacBook Pro
 
 So, the setup is: (Images 14 )
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
 The command docker run ... alpine sh automatically starts that small Linux environment inside Docker.
 
 The output confirms dmz-firewall is running with the required networking capabilities.
 
 Right now, the firewall is connected only to the External network. Next it given it access to the other two security zones. (Image 15)\
-\
-\
-\
-Step 9 — Connecting the Firewall to the DMZ and Internal LAN
----------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 9 — Connecting the Firewall to the DMZ and Internal LAN
 
 I run these two commands:
 
@@ -285,10 +230,8 @@ dmz_internal → 172.22.0.3
 
 So the firewall is now physically/logically positioned between all three lab networks. (Images 16 and 17)
 
-\
-\
-Step 10 — Verifying the Firewall Interfaces
--------------------------------------------
+### Step 10 — Verifying the Firewall Interfaces
+
 
 Now let's look inside the firewall container and confirm Linux sees those interfaces.
 
@@ -308,38 +251,15 @@ The many other interfaces such as tunl0, gre0, and ip6tnl0 can be ignored fo
 
 The firewall now effectively looks like this: (Images 18 and 19)
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
 This is important because later a firewall rule can essentially say, for example:
 
 eth0 → eth1 : Allow HTTP
 
 eth0 → eth2 : Block
 
-eth1 → eth2 : Block\
-\
-\
-\
-\
-Step 11 — Checking IP Forwarding
---------------------------------
+eth1 → eth2 : Block
+
+### Step 11 — Checking IP Forwarding
 
 I am going to see whether Linux currently allows packets to be routed between these interfaces.
 
@@ -348,10 +268,8 @@ I run: docker exec dmz-firewall sysctl net.ipv4.ip_forward
 The 1 means IPv4 forwarding is already enabled inside the firewall container. Therefore, Linux is capable of forwarding packets between eth0, eth1, and eth2. I don't need to enable it manually.
 
 One important distinction: IP forwarding does not mean traffic is automatically permitted by our firewall policy. It only gives the Linux system the ability to route packets. I still need firewall rules to decide what is allowed and blocked. (Image 20)\
-\
-\
-Step 12 — Checking the Firewall Tool
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 12 — Checking the Firewall Tool
 
 Before creating any rules, I am going to see whether iptables is available inside the Alpine firewall container.
 
@@ -363,12 +281,6 @@ Notice: “iptables” is the tool that lets the Linux container actually behav
 
 So far, the dmz-firewall container has three network interfaces and can route packets: (Images 21)
 
-\
-\
-\
-\
-\
-\
 But routing alone doesn't decide which traffic is permitted or denied. iptables lets me to create those security rules.
 
 For example, later I can tell the firewall:
@@ -398,10 +310,8 @@ iptables = Should this particular traffic be allowed to cross between those netw
 That's why installing iptables is central to the Firewall-Protected DMZ lab.
 
 So, Nothing is wrong with Docker or the firewall. It simply means the minimal Alpine Linux image does not have “iptables” installed. (Image 22)\
-\
-\
-\
-Step 13 — Installing iptables in the Firewall
+
+### Step 13 — Installing iptables in the Firewall
 
 I run: docker exec dmz-firewall apk add --no-cache iptables
 
@@ -409,13 +319,9 @@ When installation finishes, I need to verify: docker exec dmz-firewall iptables 
 
 iptables installed successfully, and the version is: iptables v1.8.13 (nf_tables)
 
-The (nf_tables) means this iptables command is using the modern Linux nftables backend.\
-(Image 23)\
-\
-\
-\
-Step 14 — View the Firewall Before Adding Rules
-----------------------------------------------------------------------------------------
+The (nf_tables) means this iptables command is using the modern Linux nftables backend. (Image 23)
+
+### Step 14 — View the Firewall Before Adding Rules
 
 Before changing anything, I am going to inspect the current forwarding policy.
 
@@ -435,10 +341,9 @@ External → Internal ACCEPT
 
 DMZ → Internal ACCEPT
 
-That is not yet a protected DMZ. I am seeing the firewall's baseline state before applying security policy. (Image 24)\
-\
+That is not yet a protected DMZ. I am seeing the firewall's baseline state before applying security policy. (Image 24)
 
-## Step 15 — Set the Default Forwarding Policy to DROP
+### Step 15 — Set the Default Forwarding Policy to DROP
 
 Now, make the first real firewall security change.
 
@@ -455,11 +360,8 @@ The firewall now shows: Chain FORWARD (policy DROP ...)
 That means forwarded traffic is denied by default unless I explicitly create an allow rule.
 
 This is the correct starting point for a protected DMZ. (Image 25)\
-\
-\
-\
-Step 16 — Allowing return traffic for established connections
--------------------------------------------------------------------
+
+### Step 16 — Allowing return traffic for established connections
 
 Before allowing new traffic, I should permit packets that belong to connections the firewall has already accepted.
 
@@ -471,8 +373,8 @@ docker exec dmz-firewall iptables -A FORWARD \\
 
 -j ACCEPT
 
-Then I verify with: docker exec dmz-firewall iptables -L FORWARD -n -v\
-\
+Then I verify with: docker exec dmz-firewall iptables -L FORWARD -n -v
+
 The output shows:
 
 Chain FORWARD (policy DROP)
@@ -481,13 +383,9 @@ Chain FORWARD (policy DROP)
 
 ACCEPT ... ctstate RELATED,ESTABLISHED
 
-The 0 packets, 0 bytes is also normal, I haven’t generated traffic through this rule yet. (Image 26)\
-\
-\
-\
-\
-Step 17 A— Allowing External → DMZ Web Traffic
------------------------------------------------------------------------------------------------------
+The 0 packets, 0 bytes is also normal, I haven’t generated traffic through this rule yet. (Image 26)
+
+### Step 17 A— Allowing External → DMZ Web Traffic
 
 Now creating the first rule that permits a new connection through the firewall.
 
@@ -503,30 +401,9 @@ The DMZ web server's exact IP address is:
 
 172.21.0.2
 
-So knowing:
+So knowing: (Images 27 and 28)
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-(Images 27 and 28)\
-\
-\
-\
-Step 17B — Add the HTTP Allow Rule
-----------------------------------
+### Step 17B — Add the HTTP Allow Rule
 
 Now tell the firewall: Allow traffic arriving from the External interface (eth0), going out through the DMZ interface (eth1), destined for the DMZ web server 172.21.0.2, but only TCP port 80 (HTTP).
 
@@ -554,13 +431,9 @@ Rule 1: ACCEPT RELATED,ESTABLISHED
 
 Rule 2: ACCEPT eth0 → eth1 → TCP 80 → 172.21.0.2
 
-I notice both counters still show 0 packets / 0 bytes. That's expected because I haven't sent test traffic through the firewall yet. (Image 29)\
-\
-\
-\
-\
-Step 18 — Prepare the External Client for the HTTP Test
-------------------------------------------------------------------------------------------------------------------------------------------------
+I notice both counters still show 0 packets / 0 bytes. That's expected because I haven't sent test traffic through the firewall yet. (Image 29)
+
+### Step 18 — Prepare the External Client for the HTTP Test
 
 Before testing, I need curl inside the external-client container.
 
@@ -569,10 +442,7 @@ I run: docker exec external-client apk add --no-cache curl
 For now, only I install curl.\
 The output confirms curl. installed successfully in external-client. (Image 30)
 
-\
-\
-Step 19 A — Add the Route Through the Firewall
-----------------------------------------------
+### Step 19 A — Add the Route Through the Firewall
 
 First, I check the external client's current routing table: docker exec external-client ip route
 
@@ -587,11 +457,8 @@ Interface: eth0
 Notice: The default gateway is Docker's bridge gateway, not the firewall at 172.20.0.3
 
 There is one setup detail I need to correct before adding the route: when I created external-client, I did not give it the NET_ADMIN capability. Without that capability, Linux will not allow me to modify its routing table. (Image 31)\
-\
-\
-\
-Step 19B — Recreate the External Client with Routing Permission
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 19B — Recreate the External Client with Routing Permission
 
 First, I remove only the external-client container:b docker rm -f external-client
 
@@ -614,11 +481,8 @@ This does not affect the firewall, DMZ server, internal host, or any container
 I will need to reinstall curl afterward because this is a new Alpine container, but that takes only one command.
 
 The external-client container has been recreated successfully with NET_ADMIN, so now it has permission to modify its own routing table. (Image 32)\
-\
-\
-\
-Step 19C — Reinstall curl
----------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 19C — Reinstall curl
 
 Because this is a new Alpine container, I reinstall curl:
 
@@ -635,11 +499,8 @@ docker exec external-client ip route
 The routing table now contains exactly: 172.21.0.0/24 via 172.20.0.3 dev eth0
 
 That means traffic from the external client destined for the DMZ will be sent to the firewall (172.20.0.3), rather than Docker's default gateway. (Image 33)\
-\
-\
-\
-Step 20 — Test External → DMZ HTTP Through the Firewall
--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 20 — Test External → DMZ HTTP Through the Firewall
 
 The first real firewall test.
 
@@ -653,9 +514,7 @@ This proves the external client successfully reached the DMZ web server on HTTP
 
 The traffic path was: (Image 34 and 35)
 
-### \
-\
-Step 21 — Prove the firewall processed the traffic
+### Step 21 — Prove the firewall processed the traffic
 
 I run: docker exec dmz-firewall iptables -L FORWARD -n -v
 
@@ -676,11 +535,8 @@ destination 172.21.0.2
 tcp dpt:80
 
 Earlier it showed 0 packets / 0 bytes. After the curl request, it increased to 7 packets / 446 bytes. So, the external client's HTTP packets definitely matched the firewall's External → DMZ TCP/80 ACCEPT rule. So, the ESTABLISHED,RELATED counter is still 0. (Image 36)\
-\
-\
-\
-Step 22 — Test that non-HTTP traffic is blocked
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 22 — Test that non-HTTP traffic is blocked
 
 Now I will test the opposite behavior. The firewall should permit HTTP, but its default DROP policy should block other forwarded traffic.
 
@@ -707,11 +563,8 @@ External → DMZ → TCP/80 HTTP ACCEPT
 External → DMZ → ICMP DROP
 
 The DMZ server is reachable, but only for traffic explicitly permitted by the firewall. (Image 37)\
-\
-\
-\
-Step 23 — Verify the dropped traffic
----------------------------------------------------------------------------------------------------
+
+### Step 23 — Verify the dropped traffic
 
 Now I want to see whether the firewall's default DROP policy counted those three ping packets.
 
@@ -733,10 +586,7 @@ HTTP TCP/80 → 7 packets ACCEPTED
 
 ICMP ping → 3 packets DROPPED (Image 38)
 
-\
-\
-Step 24 A— Prepare External → Internal LAN Test
------------------------------------------------
+### Step 24 A— Prepare External → Internal LAN Test
 
 Now I’ll prove that an external system cannot reach the protected Internal LAN.
 
@@ -753,12 +603,8 @@ Internal Host: 172.22.0.2
 Internal subnet: 172.22.0.0/24
 
 Firewall internal interface: 172.22.0.3. (Image 39)\
-\
-\
-\
-\
-Step 24B — Route Internal-LAN Traffic Through the Firewall
-----------------------------------------------------------
+
+### Step 24B — Route Internal-LAN Traffic Through the Firewall
 
 The external client needs a route telling it that traffic for 172.22.0.0/24 must go through the firewall at 172.20.0.3.
 
@@ -771,11 +617,8 @@ The routing table is exactly right:
 172.21.0.0/24 via 172.20.0.3 dev eth0 ← DMZ
 
 172.22.0.0/24 via 172.20.0.3 dev eth0 ← Internal LAN. (Image 40)\
-\
-\
-\
-Step 24C — Test External → Internal
------------------------------------------------------------------
+
+### Step 24C — Test External → Internal
 
 Now simulating an external system attempting to reach the protected internal host:
 
@@ -797,12 +640,9 @@ External → DMZ HTTP/80 ALLOW
 
 External → DMZ ICMP DROP
 
-External → Internal ICMP DROP (Image 41)\
-\
-\
-\
-Step 25 — Verify the new blocked packets in the firewall
---------------------------------------------------------
+External → Internal ICMP DROP (Image 41)
+
+### Step 25 — Verify the new blocked packets in the firewall
 
 I run: docker exec dmz-firewall iptables -L FORWARD -n -v
 
@@ -822,14 +662,9 @@ External → DMZ ICMP DROP (3 packets)
 
 External → Internal ICMP DROP (3 packets)
 
-─────────
-
 Total DROP 6 packets (Image 42)\
-\
-\
-\
-Step 26A — Create a DMZ Test Client
------------------------------------
+
+### Step 26A — Create a DMZ Test Client
 
 I run:
 
@@ -843,14 +678,11 @@ docker run -dit \\
 
 alpine sh
 
-Then I verify: docker ps --filter name=dmz-client\
-\
+Then I verify: docker ps --filter name=dmz-client
+
 The dmz-client is running successfully inside dmz_zone. (Image 43)\
-\
-\
-\
-Step 26B — Check the DMZ Client's Address and Route
--------------------------------------------------------------------
+
+### Step 26B — Check the DMZ Client's Address and Route
 
 I run: docker exec dmz-client ip addr show eth0
 
@@ -864,25 +696,20 @@ Default gateway: 172.21.0.1
 
 Interface: eth0
 
-Now I need traffic for the Internal LAN to go through the firewall at 172.21.0.3.\
-(Image 44)\
-\
-\
-Step 26C — Route Internal Traffic Through the Firewall
-----------------------------------------------------------------------------------
+Now I need traffic for the Internal LAN to go through the firewall at 172.21.0.3.
+(Image 44)
+
+### Step 26C — Route Internal Traffic Through the Firewall
 
 I run: docker exec dmz-client ip route add 172.22.0.0/24 via 172.21.0.3
 
-Then I verify: docker exec dmz-client ip route\
-\
+Then I verify: docker exec dmz-client ip route
+
 The routing table now correctly shows: 172.22.0.0/24 via 172.21.0.3 dev eth0
 
 That means traffic from the DMZ client (172.21.0.4) toward the Internal LAN must pass through our firewall (172.21.0.3). (Image 45)\
-\
-\
-\
-Step 26D — Final DMZ → Internal Test
-------------------------------------------------------------------------------------------------------------------------------------
+
+### Step 26D — Final DMZ → Internal Test
 
 Now I run: docker exec dmz-client ping -c 3 -W 1 172.22.0.2
 
@@ -905,17 +732,17 @@ I have now demonstrated the complete security behavior:
 | External → Internal LAN    | DROP   |
 | DMZ → Internal LAN         | DROP   |
 
-(Image 46)\
-\
-Step 27 — Final Firewall Verification
--------------------------------------
+(Image 46)
+
+### Step 27 — Final Firewall Verification
+
 
 Let's collect the final firewall evidence. I run:
 
 docker exec dmz-firewall iptables -L FORWARD -n -v
 
-Earlier the default DROP counter was 6 packets. Since I just generated another three blocked packets from DMZ → Internal, I expect it to increase to approximately 9 packets.\
-\
+Earlier the default DROP counter was 6 packets. Since I just generated another three blocked packets from DMZ → Internal, I expect it to increase to approximately 9 packets.
+
 The final firewall evidence is:
 
 Chain FORWARD (policy DROP 9 packets, 756 bytes)
@@ -924,10 +751,8 @@ Chain FORWARD (policy DROP 9 packets, 756 bytes)
 
 9 packets / 756 bytes → DROP by default
 
-### The 9 dropped packets correspond to the three sets of three blocked ICMP tests: External → DMZ, External → Internal, and DMZ → Internal. (Image 47)\
-\
-\
-\
+### The 9 dropped packets correspond to the three sets of three blocked ICMP tests: External → DMZ, External → Internal, and DMZ → Internal. (Image 47)
+
 Final SOC interpretation
 
 The lab successfully implemented a segmented architecture consisting of External, DMZ, and Internal networks protected by a Linux firewall. A default-deny (DROP) forwarding policy was applied, while an explicit rule permitted external HTTP traffic to the DMZ web server on TCP port 80. Testing verified that authorized HTTP traffic reached the DMZ server, while unauthorized ICMP traffic to the DMZ and Internal network was blocked. DMZ-to-Internal communication was also successfully prevented, demonstrating network segmentation, least-privilege firewall policy, and protection of internal assets if a DMZ system were compromised.
@@ -966,34 +791,6 @@ Firewall DROP evidence: 9 packets / 756 bytes
 | External → Internal | Traffic originating from an external/untrusted network and attempting to directly reach the protected internal network. This traffic was blocked in the lab. |
 | DMZ → Internal ICMP | ICMP traffic originating from a system inside the DMZ and attempting to reach the internal network. This was blocked, demonstrating that a DMZ system does not automatically have access to internal assets. |
 | IP Forwarding | A Linux networking capability that allows a system with multiple network interfaces to route packets between different networks. The firewall container had IPv4 forwarding enabled so it could operate between the External, DMZ, and Internal networks. |
-| iptables | A Linux firewall administration utility used to create rules that determine which packets are accepted, dropped, or otherwise processed. It was used in this lab to implement the DMZ firewall policy. |
+| iptables | A Linux firewall administration utility used to create rules that determine which packets are accepted, dropped, or otherwise processed. It was used in this lab to implement the DMZ firewall policy. 
 
-### \
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
 
-Top of Form
-
-Bottom of Form
-
-Top of Form
-
-Bottom of Form
